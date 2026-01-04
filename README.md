@@ -35,7 +35,9 @@ There are various settings you can change in TradingView:
 ![Example of the Super Oversold Pine Script Backtested on Barclays (BARC) during 2008 - 2012](https://github.com/nichelaboratory/PineScript_SuperOversold/blob/main/Super-Oversold-Options.png)
 
 Good backtesting stocks for this script: OLN, ARE, CE, SHOO, KSS
+
 Long term backtesting (including the 2008 GFC): Barclays (BARC) 1990+ Land Securities (LAND) 1990+
+
 Settings: just play around with them but be wary of curve fitting. With ETFs/super high quality stocks a 52 week low followed by a 5-7% drop may work better. You will get more signals but this will reduce the win rate.
 
 On the Trading View chart:
