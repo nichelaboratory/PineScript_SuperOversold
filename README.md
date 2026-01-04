@@ -43,7 +43,11 @@ Settings: just play around with them but be wary of curve fitting. With ETFs/sup
 On the Trading View chart:
 
 Blue line: Level of the previous 52 week low
+
 Red line: Current Super Oversold price target
+
 Blue down arrow: new 52 week low
+
 Red down arrow: Buy
+
 Pink down arrow: profitable exit from position
