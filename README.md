@@ -18,7 +18,11 @@ Here's the same stock but a very long term backtest showing that this signal has
 
 ![Example of the Super Oversold Pine Script Backtested on Barclays (BARC) in BTFDBot](https://github.com/nichelaboratory/PineScript_SuperOversold/blob/main/Super-Oversold-Barc-BTFDBot-Chart.png)
 
-Again it's a rare signal but has an extremely high win rate (100% on many instruments).
+Again it's a rare signal but has an extremely high win rate (100% on many instruments). Here's Steve Madden (SHOO):
+
+![Steve Madden SHOO Super Oversold Trading View Backtest Results](https://github.com/nichelaboratory/PineScript_SuperOversold/blob/main/Super-Oversold-Steve-Madden-SHOO.png)
+
+While we didn't beat buy and hold, over the lifetime of this stock we made 62.12% and the average time in trade was just 28 days (145.9% CAGR).
 
 There are various settings you can change in TradingView:
 
@@ -30,5 +34,8 @@ Settings: just play around with them but be wary of curve fitting. With ETFs/sup
 
 On the Trading View chart:
 
-Blue line: 52 week low Red line: Current Super Oversold price target
-Blue down arrow: new 52 week low Red down arrow: Buy Pink down arrow: profitable exit from position
+Blue line: Level of the previous 52 week low
+Red line: Current Super Oversold price target
+Blue down arrow: new 52 week low
+Red down arrow: Buy
+Pink down arrow: profitable exit from position
