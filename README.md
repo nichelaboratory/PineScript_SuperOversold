@@ -51,3 +51,5 @@ Blue down arrow: new 52 week low
 Red down arrow: Buy
 
 Pink down arrow: profitable exit from position
+
+By using this script you acknowledge that you have read the script's license in this GitHub repository.
