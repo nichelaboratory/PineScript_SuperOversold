@@ -1,0 +1,132 @@
+//@version=6
+//BTFDBot Swing Trading Strategy: Super Oversold from a 52 Week Low
+//What it looks for? A 52 week low followed by the stock plunging another 20%.
+//If it's a quality stock (or even junk) the probability of a 5-6% bounce is extremely high.
+//Check my YouTube: https://www.youtube.com/@simpleswingtrading/
+//And my Substack: https://simpleswingtrading.substack.com/
+//For the latest Super Oversold buy signals for US stocks go to BTFDBot.com
+//You can also screen US stocks for this signal on FinViz but you can't do it on the free account.
+//You will need to register for an Elite account:
+//https://finviz.com/?affilId=717656427
+//Help support my work by using my affiliate link - it's much appreciated!
+//Once you have an Elite account you can go here:
+//https://elite.finviz.com/screener.ashx?v=111&p=w&s=ta_newlow&f=ta_highlow52w_20to30-blx&ft=3&o=-marketcap?affilId=717656427
+//Remember this is a RARE signal but has an EXTREMELY HIGH win rate on QUALITY stocks
+//As with all my signals be wary of instruments that are in or coming off an obvious bubble.
+//This script is not financial advice and is for entertainment purposes only so use at your own risk.
+//
+//Good backtesting stocks for this script: OLN, ARE, CE, SHOO, KSS
+//2008 backtesting: Barclays (BARC) 1990+ Land Securities (LAND) 1990+
+//
+//Settings: just play around with them but be wary of curve fitting.
+//With ETFs/super high quality stocks a 52 week low followed by a 5-7% drop may work better.
+//You will get more signals but this will reduce the win rate.
+//
+//On the chart:
+//Blue line: 52 week low Red line: Current Super Oversold price target
+//Blue down arrow: new 52 week low Red down arrow: Buy Pink down arrow: profitable exit from position
+//
+//Note: process_orders_on_close will cause the orders to execute on the current candle instead of the next candle
+strategy("Super Oversold (52 Week Low Version)",pyramiding=0, process_orders_on_close = true, shorttitle="Super Oversold",overlay=true,initial_capital=1000, default_qty_value=100, default_qty_type=strategy.percent_of_equity)
+import TradingView/Strategy/5
+ProfitTargetInput = input.float(6.0, title="Profit Target (%) [Higher % Reduces Win Rate]") //Change this to your desired % profit. Note: a higher % usually significantly reduces CAGR so you don't necessarily make a higher return!
+SuperOversoldTargetInput = input.float(20, title="Super Oversold Target (%) [Try 20% stocks, 7% ETFs]") //20% normally best for quality stocks 7% may be optimal for quality ETFs
+NumberOfBarsForLow = input.int(252, title="Trading Days for Low (252 = 52 Week Low)")
+StartDate = input.time(defval=timestamp('01 Jan 1990 00:00 +0000'), title='Start Date')
+EndDate = input.time(defval=timestamp('31 Dec 2050 00:00 +0000'), title='End Date')
+WaitForProfitCalendarDays = input.int(365, title="Calendar Days to Wait for Profit")
+WaitForBreakevenCalendarDays = input.int(365, title="Calendar Days to Wait for Breakeven")
+StopLossInput = input.float(80, title="Stop Loss (%) [May Reduce Expectancy]")
+
+//Initialise variables that will remember their state between bars
+var SuperOversoldBuyPrice = 0.00
+var FiftyTwoWeekLowTriggerDate = StartDate
+var BuyTheSuperOversoldSignal = false
+var SuperOversoldSignalHasBeenBought = false
+var Plot52WeekLow = false
+var PlotSuperOversold= false
+var HaveExitedTrade = false
+
+IsInDateRange = time>=StartDate and time<=EndDate 
+ProfitMultiplier = (ProfitTargetInput / 100) + 1
+StopLossMultiplier = (100 - StopLossInput) / 100
+SuperOversoldMultiplier = (100 - SuperOversoldTargetInput) / 100
+buyPrice = close
+//buyPrice = (open + close) / 2 //If you want to buy at MidOpenClose as used by BTFDBot
+
+FiftyTwoWeekLow = ta.lowest(open, NumberOfBarsForLow)[1]
+plot(FiftyTwoWeekLow, color=color.blue)
+
+//If we open below the 52 week low then set new super oversold buy target
+if close[1] < FiftyTwoWeekLow and not BuyTheSuperOversoldSignal and IsInDateRange
+    SuperOversoldBuyPrice := FiftyTwoWeekLow * SuperOversoldMultiplier
+    FiftyTwoWeekLowTriggerDate := time
+    BuyTheSuperOversoldSignal := true
+    Plot52WeekLow := true
+
+plotchar(HaveExitedTrade, "Exited Trade", "▼", location.bottom, color=color.purple, size=size.small)    
+
+if  HaveExitedTrade
+    SuperOversoldBuyPrice := FiftyTwoWeekLow * SuperOversoldMultiplier
+    HaveExitedTrade := false
+
+plotchar(Plot52WeekLow, "New 52 Week Low", "▼", location.bottom, color=color.blue, size=size.small)
+
+if Plot52WeekLow
+    Plot52WeekLow := false
+
+prevLowestLow = ta.lowest(low, NumberOfBarsForLow)[1]
+
+days = (time - FiftyTwoWeekLowTriggerDate) / (24 * 60 * 60 * 1000)
+if days > NumberOfBarsForLow and IsInDateRange
+    BuyTheSuperOversoldSignal := false
+    SuperOversoldBuyPrice := 0.00
+    
+if close < SuperOversoldBuyPrice and BuyTheSuperOversoldSignal and IsInDateRange and strategy.opentrades == 0
+    SuperOversoldSignalHasBeenBought := true
+    PlotSuperOversold := true
+
+plotchar(PlotSuperOversold, "New Super Oversold", "▼", location.bottom, color=color.red, size=size.small)
+
+if PlotSuperOversold and IsInDateRange
+    PlotSuperOversold := false
+
+plot(SuperOversoldBuyPrice, color=color.red)
+
+buyPreviousDayPrice = close[1]
+
+//Super Oversold from 52 Week Low
+BuySignal = SuperOversoldSignalHasBeenBought
+
+if (IsInDateRange and BuySignal)
+
+    BuyTheSuperOversoldSignal := false
+    SuperOversoldBuyPrice := 0.00
+    SuperOversoldSignalHasBeenBought := false
+
+    profitPrice = buyPrice *  ProfitMultiplier
+    stopLossPrice = buyPrice * StopLossMultiplier
+    stopEntryPrice = buyPrice
+    entryId = "T_" + str.tostring(bar_index)
+    
+    strategy.entry(entryId, strategy.long, stop = low)
+    strategy.exit("Exit " + entryId, from_entry=entryId,limit=profitPrice, stop=stopLossPrice, comment_profit = entryId + " Profit", comment_loss = entryId + " LOSS")
+    
+//If the open position has not become profitable after {NumberOfBarsForLow}
+//Then change the profit target to the buy price
+//(use 0.5% above actual buy price so it's technically logged as a profitable trade)
+if strategy.opentrades > 0
+    if (strategy.opentrades.size(0)) > 0
+        if (time - strategy.opentrades.entry_time(0)) > WaitForProfitCalendarDays *24* 60  * 60 * 1000 // Test if it is more than 3 minutes since the trade is open
+            strategy.exit("Exit " + strategy.opentrades.entry_id(0), from_entry=strategy.opentrades.entry_id(0),limit=strategy.opentrades.entry_price(0) * 1.005, comment_profit = strategy.opentrades.entry_id(0) + " Breakeven [0]")
+
+//If still no exit from the trade after 2x {NumberOfBarsForLow} then sell the position
+if strategy.opentrades > 0
+    if (strategy.opentrades.size(0)) > 0
+        if (time - strategy.opentrades.entry_time(0)) > (WaitForProfitCalendarDays + WaitForBreakevenCalendarDays) *24* 60  * 60 * 1000 // Test if it is more than 3 minutes since the trade is open
+            strategy.close(strategy.opentrades.entry_id(0), strategy.opentrades.entry_id(0) + " LOSS (Timed Out [0]")   
+
+HaveExitedTrade := strategy.position_size == 0 and strategy.closedtrades.exit_bar_index(strategy.closedtrades - 1) == bar_index
+
+if (not IsInDateRange)
+    strategy.close_all()
